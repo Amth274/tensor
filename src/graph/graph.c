@@ -55,11 +55,13 @@ void graph_destroy(Graph* g)
 
     // Free tensor shapes
     for (uint32_t i = 0; i < g->tensor_count; i++) {
-        free(g->tensors[i].shape);
-        free(g->tensors[i].strides);
-    }
+    free(g->tensors[i].shape);
+    free(g->tensors[i].strides);
+    free(g->tensors[i].consumers);   // <-- THIS is the missing one
+}
 
     free(g->nodes);
+    free(g->execution_order);
     free(g->tensors);
 
     if (g->arena) {
@@ -122,6 +124,9 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
 
     t->producer = INVALID_ID;
     t->consumers = NULL;
+    t->num_consumers = 0;
+    t->consumer_capacity = 0;
+    
 
     // Allocate shape
     t->shape = (int64_t*)malloc(sizeof(int64_t) * ndims);
@@ -131,7 +136,7 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
         return UINT32_MAX;
     }
 
-    printf("shape allocated\n");
+    // printf("shape allocated\n");
 
     // Copy shape
     size_t numel = 1;
@@ -155,7 +160,12 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
 }
 
 
-uint32_t graph_add_node(Graph* g,OpType op,uint32_t* inputs,uint32_t num_inputs,uint32_t* outputs,uint32_t num_outputs)
+uint32_t graph_add_node(Graph* g,
+                        OpType op,
+                        uint32_t* inputs,
+                        uint32_t num_inputs,
+                        uint32_t* outputs,
+                        uint32_t num_outputs)
 {
     if (!g || num_inputs > MAX_INPUTS || num_outputs > MAX_OUTPUTS)
         return UINT32_MAX;
@@ -180,25 +190,43 @@ uint32_t graph_add_node(Graph* g,OpType op,uint32_t* inputs,uint32_t num_inputs,
 
     n->id = id;
     n->op = op;
-
     n->num_inputs = num_inputs;
     n->num_outputs = num_outputs;
 
-    // Copy inputs
+    // ---- Copy inputs + register consumers ----
     for (uint32_t i = 0; i < num_inputs; i++) {
-        n->inputs[i] = inputs[i];
+        uint32_t tensor_id = inputs[i];
+        n->inputs[i] = tensor_id;
 
-        // Update last_use placeholder
-        // g->tensors[inputs[i]].last_use = id;
+        TensorMeta* t = &g->tensors[tensor_id];
+
+        // Grow consumer list if needed
+        if (t->num_consumers == t->consumer_capacity) {
+            uint32_t new_cap = (t->consumer_capacity == 0)
+                ? 4
+                : t->consumer_capacity * 2;
+
+            uint32_t* new_arr = (uint32_t*)realloc(
+                t->consumers,
+                new_cap * sizeof(uint32_t)
+            );
+
+            if (!new_arr)
+                return UINT32_MAX;
+
+            t->consumers = new_arr;
+            t->consumer_capacity = new_cap;
+        }
+
+        t->consumers[t->num_consumers++] = id;
     }
 
-    // Copy outputs
+    // ---- Copy outputs + set producer ----
     for (uint32_t i = 0; i < num_outputs; i++) {
-        n->outputs[i] = outputs[i];
+        uint32_t tensor_id = outputs[i];
+        n->outputs[i] = tensor_id;
 
-        // Set producer
-        g->tensors[outputs[i]].producer = id;
-        // g->tensors[outputs[i]].first_use = id;
+        g->tensors[tensor_id].producer = id;
     }
 
     n->kernel_cache = NULL;
