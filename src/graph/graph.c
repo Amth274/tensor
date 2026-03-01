@@ -209,22 +209,100 @@ uint32_t graph_add_node(Graph* g,OpType op,uint32_t* inputs,uint32_t num_inputs,
     return id;
 }
 
-int graph_topo_sort(Graph* g){
+int graph_topo_sort(Graph* g)
+{
+    if (!g || g->node_count == 0)
+        return -1;
 
-    uint32_t* indegree_queue = malloc(sizeof(uint32_t)*g->node_capacity);
-    uint32_t head = 0;
-    uint32_t tail = 0;
+    uint32_t node_count = g->node_count;
 
-    for(int i=0;i<g->node_count;i++){
-        for(int j=0;j<g->node_count;j++){
-            int temp_count = 0;
-            if(g->nodes[i]->inputs[j] != INVALID_ID){
-                // continue;
-                temp_count++;
+    // Allocate execution order array
+    if (g->execution_order)
+        free(g->execution_order);
+
+    g->execution_order = (uint32_t*)malloc(sizeof(uint32_t) * node_count);
+    if (!g->execution_order)
+        return -1;
+
+    g->execution_count = 0;
+
+    // Allocate indegree array
+    uint32_t* indegree = (uint32_t*)calloc(node_count, sizeof(uint32_t));
+    if (!indegree) {
+        free(g->execution_order);
+        g->execution_order = NULL;
+        return -1;
+    }
+
+    // Compute indegree for each node
+    for (uint32_t n = 0; n < node_count; n++) {
+        Node* node = &g->nodes[n];
+
+        for (uint32_t i = 0; i < node->num_inputs; i++) {
+            uint32_t tensor_id = node->inputs[i];
+            TensorMeta* t = &g->tensors[tensor_id];
+
+            if (t->producer != INVALID_ID) {
+                indegree[n]++;
             }
-
         }
     }
 
+    // Allocate queue (max size = node_count)
+    uint32_t* queue = (uint32_t*)malloc(sizeof(uint32_t) * node_count);
+    if (!queue) {
+        free(indegree);
+        free(g->execution_order);
+        g->execution_order = NULL;
+        return -1;
+    }
 
+    uint32_t head = 0;
+    uint32_t tail = 0;
+
+    // Push nodes with indegree 0
+    for (uint32_t n = 0; n < node_count; n++) {
+        if (indegree[n] == 0) {
+            queue[tail++] = n;
+        }
+    }
+
+    // Kahn's algorithm
+    while (head < tail) {
+        uint32_t node_id = queue[head++];
+        g->execution_order[g->execution_count++] = node_id;
+
+        Node* node = &g->nodes[node_id];
+
+        // For each output tensor
+        for (uint32_t i = 0; i < node->num_outputs; i++) {
+            uint32_t tensor_id = node->outputs[i];
+            TensorMeta* t = &g->tensors[tensor_id];
+
+            // For each consumer of that tensor
+            for (uint32_t c = 0; c < t->num_consumers; c++) {
+                uint32_t consumer_id = t->consumers[c];
+
+                indegree[consumer_id]--;
+
+                if (indegree[consumer_id] == 0) {
+                    queue[tail++] = consumer_id;
+                }
+            }
+        }
+    }
+
+    free(queue);
+    free(indegree);
+
+    // Detect cycle
+    if (g->execution_count != node_count) {
+        // Cycle detected
+        free(g->execution_order);
+        g->execution_order = NULL;
+        g->execution_count = 0;
+        return -1;
+    }
+
+    return 0;
 }
