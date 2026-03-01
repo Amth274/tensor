@@ -210,5 +210,21 @@ uint32_t graph_add_node(Graph* g,OpType op,uint32_t* inputs,uint32_t num_inputs,
 }
 
 int graph_topo_sort(Graph* g){
-    
+
+    uint32_t* indegree_queue = malloc(sizeof(uint32_t)*g->node_capacity);
+    uint32_t head = 0;
+    uint32_t tail = 0;
+
+    for(int i=0;i<g->node_count;i++){
+        for(int j=0;j<g->node_count;j++){
+            int temp_count = 0;
+            if(g->nodes[i]->inputs[j] != INVALID_ID){
+                // continue;
+                temp_count++;
+            }
+
+        }
+    }
+
+
 }
