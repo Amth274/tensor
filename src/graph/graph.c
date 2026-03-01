@@ -87,9 +87,6 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
         return UINT32_MAX;
     }
 
-
-    
-    
     // Grow tensor array if needed
     if (g->tensor_count == g->tensor_capacity) {
         uint32_t new_capacity = g->tensor_capacity * 2;
@@ -105,6 +102,8 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
         g->tensor_capacity = new_capacity;
     }
 
+
+
     uint32_t id = g->tensor_count;
     TensorMeta* t = &g->tensors[id];
 
@@ -112,7 +111,6 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
     t->id = id;
     t->ndims = ndims;
     t->dtype = dtype;
-    t->producer = -1;
     t->requires_grad = requires_grad;
 
     t->is_input = 0;
@@ -121,6 +119,9 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
     t->offset = 0;
     t->first_use = 0;
     t->last_use = 0;
+
+    t->producer = INVALID_ID;
+    t->consumers = NULL;
 
     // Allocate shape
     t->shape = (int64_t*)malloc(sizeof(int64_t) * ndims);
@@ -154,14 +155,7 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
 }
 
 
-uint32_t graph_add_node(
-    Graph* g,
-    OpType op,
-    uint32_t* inputs,
-    uint32_t num_inputs,
-    uint32_t* outputs,
-    uint32_t num_outputs
-)
+uint32_t graph_add_node(Graph* g,OpType op,uint32_t* inputs,uint32_t num_inputs,uint32_t* outputs,uint32_t num_outputs)
 {
     if (!g || num_inputs > MAX_INPUTS || num_outputs > MAX_OUTPUTS)
         return UINT32_MAX;
@@ -195,7 +189,7 @@ uint32_t graph_add_node(
         n->inputs[i] = inputs[i];
 
         // Update last_use placeholder
-        g->tensors[inputs[i]].last_use = id;
+        // g->tensors[inputs[i]].last_use = id;
     }
 
     // Copy outputs
@@ -204,7 +198,7 @@ uint32_t graph_add_node(
 
         // Set producer
         g->tensors[outputs[i]].producer = id;
-        g->tensors[outputs[i]].first_use = id;
+        // g->tensors[outputs[i]].first_use = id;
     }
 
     n->kernel_cache = NULL;
@@ -213,4 +207,8 @@ uint32_t graph_add_node(
     g->node_count++;
 
     return id;
+}
+
+int graph_topo_sort(Graph* g){
+    
 }

@@ -41,13 +41,7 @@ static size_t dtype_size(DType dtype) {
 */
 
 // create tensor class
-Tensor* tensor_create(
-    Graph* g,
-    int32_t ndims,
-    const int64_t* shape,
-    DType dtype,
-    uint8_t requires_grad
-)
+Tensor* tensor_create(Graph* g,int32_t ndims,const int64_t* shape,DType dtype,uint8_t requires_grad)
 {
     if (!g || ndims <= 0 || !shape)
         return NULL;
@@ -64,6 +58,8 @@ Tensor* tensor_create(
 
     if (id == UINT32_MAX)
         return NULL;
+
+    
 
     // Allocate tensor handle
     Tensor* t = (Tensor*)malloc(sizeof(Tensor));
