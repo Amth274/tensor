@@ -134,7 +134,12 @@ void graph_destroy(Graph* g);
 uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType dtype,uint8_t requires_grad);
 uint32_t graph_add_node(Graph* g,OpType op,uint32_t* inputs,uint32_t num_inputs,uint32_t* outputs,uint32_t num_outputs);
 int graph_topo_sort(Graph* g);
+void graph_lifetime_analysis(Graph* g);
+size_t graph_simulate_peak_memory(Graph* g);
+int graph_plan_memory(Graph* g);
 // void graph_destroy(Graph* g);
+// backward_graph 
+
 
 
 

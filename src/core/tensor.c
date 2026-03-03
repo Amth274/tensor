@@ -59,7 +59,7 @@ Tensor* tensor_create(Graph* g,int32_t ndims,const int64_t* shape,DType dtype,ui
     if (id == UINT32_MAX)
         return NULL;
 
-    
+        
 
     // Allocate tensor handle
     Tensor* t = (Tensor*)malloc(sizeof(Tensor));

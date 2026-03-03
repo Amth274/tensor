@@ -407,3 +407,158 @@ int graph_compute_lifetimes(Graph* g)
     free(position);
     return 0;
 }
+
+size_t graph_simulate_peak_memory(Graph* g)
+{
+    if (!g || !g->execution_order || g->execution_count == 0)
+        return 0;
+
+    size_t peak = 0;
+
+    // Iterate over each execution step
+    for (uint32_t step = 0; step < g->execution_count; step++) {
+
+        size_t current_live_memory = 0;
+
+        // Sum sizes of all live tensors at this step
+        for (uint32_t t_id = 0; t_id < g->tensor_count; t_id++) {
+
+            TensorMeta* t = &g->tensors[t_id];
+
+            if (t->first_use <= step && step <= t->last_use) {
+                current_live_memory += t->size_bytes;
+            }
+        }
+
+        if (current_live_memory > peak)
+            peak = current_live_memory;
+    }
+
+    return peak;
+}
+
+
+typedef struct {
+    uint32_t tensor_id;
+} TensorRef;
+
+typedef struct {
+    size_t offset;
+    size_t size;
+} FreeBlock;
+
+static int compare_by_first_use(const void* a, const void* b)
+{
+    const TensorMeta* ta = *(const TensorMeta**)a;
+    const TensorMeta* tb = *(const TensorMeta**)b;
+
+    if (ta->first_use < tb->first_use) return -1;
+    if (ta->first_use > tb->first_use) return 1;
+    return 0;
+}
+
+int graph_plan_memory(Graph* g)
+{
+    if (!g)
+        return -1;
+
+    uint32_t tensor_count = g->tensor_count;
+
+    if (tensor_count == 0)
+        return 0;
+
+    // Collect tensor pointers
+    TensorMeta** tensors = malloc(sizeof(TensorMeta*) * tensor_count);
+    if (!tensors)
+        return -1;
+
+    for (uint32_t i = 0; i < tensor_count; i++)
+        tensors[i] = &g->tensors[i];
+
+    // Sort by first_use
+    qsort(tensors, tensor_count, sizeof(TensorMeta*), compare_by_first_use);
+
+    // Active tensors (worst-case size = tensor_count)
+    TensorMeta** active = malloc(sizeof(TensorMeta*) * tensor_count);
+    if (!active) {
+        free(tensors);
+        return -1;
+    }
+    uint32_t active_count = 0;
+
+    // Free blocks (worst-case size = tensor_count)
+    FreeBlock* free_blocks = malloc(sizeof(FreeBlock) * tensor_count);
+    if (!free_blocks) {
+        free(tensors);
+        free(active);
+        return -1;
+    }
+    uint32_t free_count = 0;
+
+    size_t arena_size = 0;
+
+    for (uint32_t i = 0; i < tensor_count; i++) {
+
+        TensorMeta* current = tensors[i];
+
+        // Skip zero-sized tensors
+        if (current->size_bytes == 0)
+            continue;
+
+        // 1. Expire old tensors
+        for (uint32_t j = 0; j < active_count;) {
+
+            if (active[j]->last_use < current->first_use) {
+
+                // Move its memory into free_blocks
+                free_blocks[free_count].offset = active[j]->offset;
+                free_blocks[free_count].size   = active[j]->size_bytes;
+                free_count++;
+
+                // Remove from active (swap-remove)
+                active[j] = active[active_count - 1];
+                active_count--;
+            }
+            else {
+                j++;
+            }
+        }
+
+        // 2. Try to reuse a free block (first-fit)
+        size_t assigned_offset = SIZE_MAX;
+        uint32_t reused_index = UINT32_MAX;
+
+        for (uint32_t j = 0; j < free_count; j++) {
+            if (free_blocks[j].size >= current->size_bytes) {
+                assigned_offset = free_blocks[j].offset;
+                reused_index = j;
+                break;
+            }
+        }
+
+        if (assigned_offset != SIZE_MAX) {
+            // Reuse block
+            current->offset = assigned_offset;
+
+            // Remove used free block (swap-remove)
+            free_blocks[reused_index] = free_blocks[free_count - 1];
+            free_count--;
+        }
+        else {
+            // Allocate new memory at end
+            current->offset = arena_size;
+            arena_size += current->size_bytes;
+        }
+
+        // Add to active list
+        active[active_count++] = current;
+    }
+
+    g->arena_size = arena_size;
+
+    free(tensors);
+    free(active);
+    free(free_blocks);
+
+    return 0;
+}
