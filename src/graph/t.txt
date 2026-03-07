@@ -1,11 +1,8 @@
-void graph_lifetime_analysis(graph g)
+int graph_backward(g)
 
-int num_execs = 0
-// all tensors marked as t->first_use = n,last_use=n
-for n in g->execution_order:
-for t in n->inputs: 
-if(t->producer_id==invalid):
-t->first_use = num_execs 
-else{
-    t->first_use = t->producer_id->
-}
+backward_array = g->execution_order.reverse
+
+for tensor->is_output==true:
+dt = fxn_derivative(tensor) 
+
+
