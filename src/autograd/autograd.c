@@ -12,10 +12,12 @@ int graph_build_backward(Graph* g){
 
     for(int i=0;i<g->tensor_capacity;i++){
         if(g->tensors[i]->is_output==1){
-            TensorMeta* seed = create_seed_tensor() // create_seed_tensor implementation to be done
+            // TensorMeta* seed = create_seed_tensor() // create_seed_tensor implementation to be done
         }
-        
+        g->grad_of[g->tensors->id] = seed->id;
     }
+
+    for(i=0;i<)
 
     
 
