@@ -12,7 +12,7 @@ Graph* graph_create(Device device, int device_id)
     if (!g) return NULL;
 
 
-    // Zero entire struct for safety
+    // Zeroing entire struct for safety
     memset(g, 0, sizeof(Graph));
 
 
@@ -72,7 +72,7 @@ void graph_destroy(Graph* g)
     free(g);
 }
 
-static size_t dtype_size(DType dtype)
+static size_t dtype_size(DType dtype) // temporary fxn
 {
     switch (dtype) {
         case DTYPE_FP32: return 4;
@@ -193,7 +193,7 @@ uint32_t graph_add_node(Graph* g,
     n->num_inputs = num_inputs;
     n->num_outputs = num_outputs;
 
-    // ---- Copy inputs + register consumers ----
+    // ---- Copy inputs nd register consumers ----
     for (uint32_t i = 0; i < num_inputs; i++) {
         uint32_t tensor_id = inputs[i];
         n->inputs[i] = tensor_id;
@@ -245,8 +245,8 @@ int graph_topo_sort(Graph* g)
     uint32_t node_count = g->node_count;
 
     // Allocate execution order array
-    if (g->execution_order)
-        free(g->execution_order);
+    // if (g->execution_order)
+    //     free(g->execution_order);
 
     g->execution_order = (uint32_t*)malloc(sizeof(uint32_t) * node_count);
     if (!g->execution_order)
@@ -254,7 +254,7 @@ int graph_topo_sort(Graph* g)
 
     g->execution_count = 0;
 
-    // Allocate indegree array
+    // Allocate indegree arry
     uint32_t* indegree = (uint32_t*)calloc(node_count, sizeof(uint32_t));
     if (!indegree) {
         free(g->execution_order);
@@ -295,7 +295,7 @@ int graph_topo_sort(Graph* g)
         }
     }
 
-    // Kahn's algorithm
+    // Kahns algorithm
     while (head < tail) {
         uint32_t node_id = queue[head++];
         g->execution_order[g->execution_count++] = node_id;
