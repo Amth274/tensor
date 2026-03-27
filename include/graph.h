@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include "tensor.h"
 
+/*
+MACROS 
+*/
 #define INVALID_ID 0xFFFFFFFFu
 #define MAX_INPUTS   8
 #define MAX_OUTPUTS  4
@@ -26,9 +29,9 @@ typedef enum {
 } OpType;
 
 
-// =======================
+// ============================================================================================================
 // TensorMeta
-// =======================
+// ============================================================================================================
 
 typedef struct {
     uint32_t id;
@@ -49,7 +52,7 @@ typedef struct {
     uint8_t is_output;
 
     // Graph connectivity
-    uint32_t producer;
+    uint32_t producer; 
     uint32_t* consumers;
     uint32_t  num_consumers;
     uint32_t  consumer_capacity;
@@ -67,9 +70,9 @@ typedef struct {
 } TensorMeta;
 
 
-// =======================
+// ===========================================================================================================
 // Node
-// =======================
+// ===========================================================================================================
 
 typedef struct {
     uint32_t id;

@@ -57,7 +57,7 @@ void graph_destroy(Graph* g)
     for (uint32_t i = 0; i < g->tensor_count; i++) {
     free(g->tensors[i].shape);
     free(g->tensors[i].strides);
-    free(g->tensors[i].consumers);   // <-- THIS is the missing one
+    free(g->tensors[i].consumers);   
 }
 
     free(g->nodes);
