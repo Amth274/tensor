@@ -23,7 +23,7 @@ int main()
 
     uint32_t in2[] = {t1};
     uint32_t out2[] = {t2};
-    graph_add_node(g, OP_ADD, in2, 1, out2, 1);
+    graph_add_node(g, OP_ADD, in2, 2, out2, 1);
 
     // -------- Chain B --------
     uint32_t t3 = graph_add_tensor_meta(g, 1, shape, DTYPE_FP32, 0);
