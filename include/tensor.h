@@ -11,7 +11,7 @@
 typedef enum {
     DEVICE_CPU,
     DEVICE_CUDA,
-    DEVICE_ROCM,
+    DEVICE_ROCM, 
     DEVICE_COUNT
 } Device;
 
