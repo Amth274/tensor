@@ -606,3 +606,49 @@ int graph_validate(Graph* g){
 
     return 0;
 }
+
+
+// arena allocator 
+int graph_allocate_arena(Graph* g)
+{
+    if (!g)
+        return -1;
+
+    if (g->arena_size == 0)
+        return 0;
+
+    if (g->arena) {
+        free(g->arena);
+        g->arena = NULL;
+    }
+
+    g->arena = malloc(g->arena_size);
+    if (!g->arena)
+        return -1;
+
+    return 0;
+}
+
+
+// graph_compile 
+
+int graph_compile(Graph* g)
+{
+    if (graph_validate(g) != 0)
+        return -1;
+
+    if (graph_topo_sort(g) != 0)
+        return -1;
+
+    if (graph_compute_lifetimes(g) != 0)
+        return -1;
+
+    if (graph_plan_memory(g) != 0)
+        return -1;
+
+    if (graph_allocate_arena(g) != 0)
+        return -1;
+
+    g->compiled = 1;
+    return 0;
+}
