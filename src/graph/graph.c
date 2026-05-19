@@ -16,7 +16,7 @@ Graph* graph_create(Device device, int device_id)
     memset(g, 0, sizeof(Graph));
 
 
-    // Initialize device
+    // Initializing device
     g->device = device;
     g->device_id = device_id;
 
@@ -160,12 +160,7 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
 }
 
 
-uint32_t graph_add_node(Graph* g,
-                        OpType op,
-                        uint32_t* inputs,
-                        uint32_t num_inputs,
-                        uint32_t* outputs,
-                        uint32_t num_outputs)
+uint32_t graph_add_node(Graph* g,OpType op,uint32_t* inputs,uint32_t num_inputs,uint32_t* outputs,uint32_t num_outputs)
 {
     if (!g || num_inputs > MAX_INPUTS || num_outputs > MAX_OUTPUTS)
         return UINT32_MAX;
@@ -276,7 +271,7 @@ int graph_topo_sort(Graph* g)
         }
     }
 
-    // Allocate queue (max size = node_count)
+    // Allocate queue (max size = node_count) (unitl only when max_size<node_count)
     uint32_t* queue = (uint32_t*)malloc(sizeof(uint32_t) * node_count);
     if (!queue) {
         free(indegree);
@@ -559,6 +554,55 @@ int graph_plan_memory(Graph* g)
     free(tensors);
     free(active);
     free(free_blocks);
+
+    return 0;
+}
+
+
+// graph validation 
+int graph_validate(Graph* g){
+    if(!g){
+        fprintf(stderr,"ERROR: graph does not exist. validation failed\n");
+        return -1;
+    }
+    if(!g->nodes){
+        fprintf(stderr,"ERROR: graph contains null nodes. validation failed\n");
+        return -1;
+    }
+
+    if(!g->tensors){
+        fprintf(stderr,"ERROR: graph contains nulltensors. validation failed\n");
+        return -1;
+    }
+    if(g->node_count>g->node_capacity){
+        fprintf(stderr,"ERROR: graph contains nodes>node capacity. validation failed\n");
+        return -1;
+    }
+    if(g->tensor_count>g->tensor_capacity){
+        fprintf(stderr,"ERROR: graph has tensor > tensor capacity. validation failed\n");
+        return -1;
+    }
+
+    for(uint_fast32_t i=0;i<g->node_count;i++){
+        if(g->nodes[i].id!=i){
+            fprintf(stderr,"ERROR: node id mismatch. validation failed\n");
+            return -1;
+            break;
+        }
+        if(g->nodes[i].num_inputs>MAX_INPUTS || g->nodes[i].num_outputs>MAX_OUTPUTS){
+            fprintf(stderr,"ERROR: num inputs/outputs exceed MAX_INPUT/MAX_OUTPUTS capacity. validatin failed\n");
+            return -1;
+            break;
+        }
+    }
+    for(uint_fast32_t i=0;i<g->tensor_count;i++){
+        if(g->tensors[i].id!=i){
+            fprintf(stderr,"ERROR: tensor desnt exist(id mismatch). validation failed\n");
+            return -1;
+            break;
+        }
+        //tensor shape stride mismatch will be validated in tensor_add_meta
+    }
 
     return 0;
 }

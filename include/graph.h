@@ -142,6 +142,8 @@ size_t graph_simulate_peak_memory(Graph* g);
 int graph_plan_memory(Graph* g);
 // void graph_destroy(Graph* g);
 // backward_graph 
+int graph_validate(Graph* h);
+
 
 
 

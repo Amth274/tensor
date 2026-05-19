@@ -71,22 +71,3 @@ Tensor* tensor_create(Graph* g,int32_t ndims,const int64_t* shape,DType dtype,ui
 
     return t;
 }
-
-
-// tensor fill normal 
-// Tensor* tensor_fill_normal(Tensor* t,float avg,float var){
-    // if(!t){
-        // fprintf(stderr,"ERROR: null tensor recieved\n");
-        // return NULL;
-    // }
-    // if(t->storage->device != DEVICE_CPU){
-        // fprintf(stderr,"ERROR: fill_normal requires tensor on CPU\n");
-        // return t;
-    // }
-// 
-    // 
-    // 
-    // dispatch_fill()
-    // return 0;
-    // 
-// }
