@@ -3,143 +3,86 @@
 #include <stdlib.h>
 
 #include "graph.h"
+#include "ops/ops.h"
 #include "tensor.h"
 
-static int require_tensor(Tensor* t, const char* name)
+static int check(int condition, const char* message)
 {
-    if (!t || !t->graph || t->id == INVALID_ID) {
-        fprintf(stderr, "failed to create %s\n", name);
+    if (!condition) {
+        fprintf(stderr, "FAIL: %s\n", message);
         return -1;
     }
 
+    printf("PASS: %s\n", message);
     return 0;
-}
-
-static void print_execution_order(Graph* g)
-{
-    printf("Execution order:");
-    for (uint32_t i = 0; i < g->execution_count; i++) {
-        printf(" %u", g->execution_order[i]);
-    }
-    printf("\n");
-}
-
-static void print_tensor_table(Graph* g)
-{
-    printf("\nTensor table:\n");
-    printf("id | producer | consumers | lifetime | offset | bytes\n");
-    printf("---+----------+-----------+----------+--------+------\n");
-
-    for (uint32_t i = 0; i < g->tensor_count; i++) {
-        TensorMeta* t = &g->tensors[i];
-
-        if (t->producer == INVALID_ID) {
-            printf("%2u | input    ", i);
-        } else {
-            printf("%2u | %8u", i, t->producer);
-        }
-
-        printf(" | %9u | [%u, %u]   | %6zu | %zu\n",
-               t->num_consumers,
-               t->first_use,
-               t->last_use,
-               t->offset,
-               t->size_bytes);
-    }
 }
 
 int main(void)
 {
     Graph* g = graph_create(DEVICE_CPU, 0);
     if (!g) {
-        fprintf(stderr, "failed to create graph\n");
+        fprintf(stderr, "FAIL: graph_create returned NULL\n");
         return 1;
     }
 
-    int64_t shape[] = {1024};
+    int status = 0;
+    int64_t shape[] = {4};
 
     Tensor* a = tensor_create(g, 1, shape, DTYPE_FP32, 0);
-    Tensor* b = tensor_create(g, 1, shape, DTYPE_FP32, 0);
-    Tensor* c = tensor_create(g, 1, shape, DTYPE_FP32, 0);
-    Tensor* d = tensor_create(g, 1, shape, DTYPE_FP32, 0);
-    Tensor* e = tensor_create(g, 1, shape, DTYPE_FP32, 0);
-    Tensor* f = tensor_create(g, 1, shape, DTYPE_FP32, 0);
+    Tensor* b = tensor_create(g, 1, shape, DTYPE_FP32, 1);
+    Tensor* c = tensor_add(a, b);
 
-    if (require_tensor(a, "tensor a") != 0 ||
-        require_tensor(b, "tensor b") != 0 ||
-        require_tensor(c, "tensor c") != 0 ||
-        require_tensor(d, "tensor d") != 0 ||
-        require_tensor(e, "tensor e") != 0 ||
-        require_tensor(f, "tensor f") != 0) {
-        free(a);
-        free(b);
-        free(c);
-        free(d);
-        free(e);
-        free(f);
-        graph_destroy(g);
-        return 1;
+    status |= check(a != NULL, "tensor_create creates input a");
+    status |= check(b != NULL, "tensor_create creates input b");
+    status |= check(c != NULL, "tensor_add returns output tensor");
+
+    if (status == 0) {
+        status |= check(g->tensor_count == 3, "tensor_add creates one output tensor");
+        status |= check(g->node_count == 1, "tensor_add creates one graph node");
+
+        Node* node = &g->nodes[0];
+        TensorMeta* a_meta = &g->tensors[a->id];
+        TensorMeta* b_meta = &g->tensors[b->id];
+        TensorMeta* c_meta = &g->tensors[c->id];
+
+        status |= check(node->op == OP_ADD, "created node op is OP_ADD");
+        status |= check(node->num_inputs == 2, "created node has two inputs");
+        status |= check(node->num_outputs == 1, "created node has one output");
+        status |= check(node->inputs[0] == a->id, "node input 0 is tensor a");
+        status |= check(node->inputs[1] == b->id, "node input 1 is tensor b");
+        status |= check(node->outputs[0] == c->id, "node output is tensor c");
+
+        status |= check(a_meta->producer == INVALID_ID, "input a has no producer");
+        status |= check(b_meta->producer == INVALID_ID, "input b has no producer");
+        status |= check(c_meta->producer == node->id, "output c producer is add node");
+        status |= check(a_meta->num_consumers == 1, "input a has one consumer");
+        status |= check(b_meta->num_consumers == 1, "input b has one consumer");
+        status |= check(a_meta->consumers[0] == node->id, "input a consumer is add node");
+        status |= check(b_meta->consumers[0] == node->id, "input b consumer is add node");
+
+        status |= check(c_meta->requires_grad == 1, "output requires_grad propagates");
+        status |= check(c_meta->dtype == DTYPE_FP32, "output dtype matches inputs");
+        status |= check(c_meta->ndims == 1, "output ndims matches inputs");
+        status |= check(c_meta->shape[0] == 4, "output shape matches inputs");
     }
 
-    uint32_t add0_inputs[] = {a->id, b->id};
-    uint32_t add0_outputs[] = {c->id};
-    uint32_t n0 = graph_add_node(g, OP_ADD, add0_inputs, 2, add0_outputs, 1);
-
-    uint32_t add1_inputs[] = {c->id, b->id};
-    uint32_t add1_outputs[] = {d->id};
-    uint32_t n1 = graph_add_node(g, OP_ADD, add1_inputs, 2, add1_outputs, 1);
-
-    uint32_t mul0_inputs[] = {c->id, d->id};
-    uint32_t mul0_outputs[] = {e->id};
-    uint32_t n2 = graph_add_node(g, OP_MUL, mul0_inputs, 2, mul0_outputs, 1);
-
-    uint32_t sub0_inputs[] = {e->id, a->id};
-    uint32_t sub0_outputs[] = {f->id};
-    uint32_t n3 = graph_add_node(g, OP_SUB, sub0_inputs, 2, sub0_outputs, 1);
-
-    if (n0 == INVALID_ID || n1 == INVALID_ID ||
-        n2 == INVALID_ID || n3 == INVALID_ID) {
-        fprintf(stderr, "failed to add one or more nodes\n");
-        free(a);
-        free(b);
-        free(c);
-        free(d);
-        free(e);
-        free(f);
-        graph_destroy(g);
-        return 1;
+    if (status == 0) {
+        status |= check(graph_compile(g) == 0, "graph_compile succeeds after tensor_add");
+        status |= check(g->compiled == 1, "graph compiled flag is set");
+        status |= check(g->execution_count == 1, "execution order has one node");
+        status |= check(g->arena != NULL, "arena is allocated");
     }
-
-    if (graph_compile(g) != 0) {
-        fprintf(stderr, "graph_compile failed\n");
-        free(a);
-        free(b);
-        free(c);
-        free(d);
-        free(e);
-        free(f);
-        graph_destroy(g);
-        return 1;
-    }
-
-    size_t peak = graph_simulate_peak_memory(g);
-
-    printf("Graph compiled: %u\n", g->compiled);
-    printf("Nodes: %u\n", g->node_count);
-    printf("Tensors: %u\n", g->tensor_count);
-    printf("Simulated peak live memory: %zu bytes\n", peak);
-    printf("Planned arena size: %zu bytes\n", g->arena_size);
-    printf("Arena allocated: %s\n", g->arena ? "yes" : "no");
-
-    print_execution_order(g);
-    print_tensor_table(g);
 
     free(a);
     free(b);
     free(c);
-    free(d);
-    free(e);
-    free(f);
     graph_destroy(g);
+
+    if (status != 0) {
+        fprintf(stderr, "tensor_add test failed\n");
+        return 1;
+    }
+
+    printf("tensor_add test passed\n");
     return 0;
 }
