@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "tensor.h"
+#include "dispatcher.h"
 
 /*
 MACROS 
@@ -15,7 +16,7 @@ MACROS
 #define INITIAL_TENSOR_CAPACITY 32
 
 
-typedef int (*KernelFn)(Graph* g, Node* node);
+// typedef int (*KernelFn)(Graph* g, Node* node);
 
 
 // =======================
