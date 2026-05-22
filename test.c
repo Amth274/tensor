@@ -26,10 +26,10 @@ int main(void)
     }
 
     int status = 0;
-    int64_t shape[] = {4};
+    int64_t shape[] = {4,5};
 
-    Tensor* a = tensor_create(g, 1, shape, DTYPE_FP32, 0);
-    Tensor* b = tensor_create(g, 1, shape, DTYPE_FP32, 1);
+    Tensor* a = tensor_create(g, 2, shape, DTYPE_FP32, 0);
+    Tensor* b = tensor_create(g, 2, shape, DTYPE_FP32, 1);
     Tensor* c = tensor_add(a, b);
 
     status |= check(a != NULL, "tensor_create creates input a");
@@ -62,8 +62,9 @@ int main(void)
 
         status |= check(c_meta->requires_grad == 1, "output requires_grad propagates");
         status |= check(c_meta->dtype == DTYPE_FP32, "output dtype matches inputs");
-        status |= check(c_meta->ndims == 1, "output ndims matches inputs");
-        status |= check(c_meta->shape[0] == 4, "output shape matches inputs");
+        status |= check(c_meta->ndims == 2, "output ndims matches inputs");
+        status |= check(c_meta->shape[0] == 4, "output shape dim 0 matches inputs");
+        status |= check(c_meta->shape[1] == 5, "output shape dim 1 matches inputs");
     }
 
     if (status == 0) {
