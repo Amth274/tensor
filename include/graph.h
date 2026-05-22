@@ -146,6 +146,8 @@ int graph_validate(Graph* g);
 int graph_allocate_arena(Graph* g);
 int graph_compile(Graph* g);
 
+int graph_execute(Graph* g);
+
 
 
 
