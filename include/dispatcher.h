@@ -3,34 +3,24 @@
 
 #include <stdint.h>
 #include "tensor.h"
-// #include "graph.h"
+
+/*
+========================================
+OPS
+========================================
+*/
 
 typedef enum {
     OP_ADD,
-    OP_MUL,
     OP_SUB,
+    OP_MUL,
     OP_DIV,
     OP_COUNT
 } OpType;
 
-// typedef enum {
-//     DTYPE_FP32,
-//     DTYPE_FP16,
-//     DTYPE_BF16,
-//     DTYPE_COUNT
-// } DType;
-
-// typedef enum {
-//     DEVICE_CPU,
-//     DEVICE_CUDA,
-//     DEVICE_ROCM,
-//     DEVICE_COUNT
-// } Device;
-
-
 /*
 ========================================
-KERNEL FUNCTION TYPES
+KERNEL ABI
 ========================================
 */
 
@@ -39,6 +29,32 @@ typedef void (*BinaryKernelFn)(
     void* a,
     void* b,
     uint32_t numel
+    // uint32_t stride,
+);
+
+/*
+========================================
+DISPATCH KEY
+========================================
+*/
+
+typedef struct {
+    Device device;
+    OpType op;
+    DType dtype;
+    uint8_t contiguous;
+} DispatchKey;
+
+/*
+========================================
+DISPATCH API
+========================================
+*/
+
+void dispatcher_init();
+
+BinaryKernelFn dispatch_binary_kernel(
+    DispatchKey key
 );
 
 #endif

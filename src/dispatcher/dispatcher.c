@@ -1,24 +1,56 @@
-#include "graph.h"
-#include <stdio.h>
-
 #include "dispatcher.h"
 #include "scalar.h"
 
-static BinaryKernelFn
-registry[DEVICE_COUNT][OP_COUNT][DTYPE_COUNT];
+#include <stdio.h>
 
-void register_kernels()
+static BinaryKernelFn
+binary_registry
+[DEVICE_COUNT]
+[OP_COUNT]
+[DTYPE_COUNT]
+[2]; // contiguous/noncontiguous
+
+static void register_cpu_kernels()
 {
-    registry[DEVICE_CPU][OP_ADD][DTYPE_FP32]
-        = scalar_add_fp32;
+    binary_registry
+    [DEVICE_CPU]
+    [OP_ADD]
+    [DTYPE_FP32]
+    [1]
+    = scalar_add_fp32;
 }
 
 
-BinaryKernelFn dispatch_kernel(
-    Device device,
-    OpType op,
-    DType dtype
+
+
+void dispatcher_init()
+{
+    register_cpu_kernels();
+}
+
+BinaryKernelFn dispatch_binary_kernel(
+    DispatchKey key
 )
 {
-    return registry[device][op][dtype];
+    BinaryKernelFn fn =
+        binary_registry
+        [key.device]
+        [key.op]
+        [key.dtype]
+        [key.contiguous];
+
+    if (!fn) {
+        fprintf(stderr,
+            "ERROR: kernel not found "
+            "(device=%d op=%d dtype=%d contig=%d)\n",
+            key.device,
+            key.op,
+            key.dtype,
+            key.contiguous
+        );
+
+        return NULL;
+    }
+
+    return fn;
 }
