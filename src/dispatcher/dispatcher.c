@@ -12,12 +12,8 @@ binary_registry
 
 static void register_cpu_kernels()
 {
-    binary_registry
-    [DEVICE_CPU]
-    [OP_ADD]
-    [DTYPE_FP32]
-    [1]
-    = scalar_add_fp32;
+    binary_registry[DEVICE_CPU][OP_ADD][DTYPE_FP32][1]= scalar_add_fp32;
+    // binary_registry[DEVICE_CPU][OP_ADD][DTYPE_FP16] = scalar_add_fp16;
 }
 
 

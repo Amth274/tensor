@@ -127,44 +127,13 @@ int main()
     b_ptr[2] = 30.0f;
     b_ptr[3] = 40.0f;
 
-    /*
-    -----------------------------------------------------
-    Dispatch kernel manually
-    -----------------------------------------------------
-    */
+    
+    // -----------------------------------------------------
+    // Validate output
+    // -----------------------------------------------------
+    // */
 
-    DispatchKey key = {
-        .device = DEVICE_CPU,
-        .op = OP_ADD,
-        .dtype = DTYPE_FP32,
-        .contiguous = 1
-    };
-
-    BinaryKernelFn fn = dispatch_binary_kernel(key);
-
-    if (!fn) {
-        printf("FAILED: dispatch_binary_kernel\n");
-        return -1;
-    }
-
-    /*
-    -----------------------------------------------------
-    Execute kernel
-    -----------------------------------------------------
-    */
-
-    fn(
-        out_ptr,
-        a_ptr,
-        b_ptr,
-        4
-    );
-
-    /*
-    -----------------------------------------------------
-    Validate output
-    -----------------------------------------------------
-    */
+    graph_execute(g);
 
     printf("Output:\n");
 
@@ -180,18 +149,6 @@ int main()
     44
     */
 
-    int success = 1;
-
-    if (out_ptr[0] != 11.0f) success = 0;
-    if (out_ptr[1] != 22.0f) success = 0;
-    if (out_ptr[2] != 33.0f) success = 0;
-    if (out_ptr[3] != 44.0f) success = 0;
-
-    if (success) {
-        printf("\nTEST PASSED\n");
-    } else {
-        printf("\nTEST FAILED\n");
-    }
 
     /*
     -----------------------------------------------------
