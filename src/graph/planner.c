@@ -2,6 +2,7 @@
 #include <string.h>
 #include "graph.h"
 #include <stdio.h>
+#include "dispatcher.h"
 
 #define INITIAL_NODE_CAPACITY   16
 #define INITIAL_TENSOR_CAPACITY 32
