@@ -26,8 +26,8 @@ KERNEL ABI
 
 typedef void (*BinaryKernelFn)(
     void* out,
-    void* a,
-    void* b,
+    const void* a,
+    const void* b,
     uint32_t numel
     // uint32_t stride,
 );

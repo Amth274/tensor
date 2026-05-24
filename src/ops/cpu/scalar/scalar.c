@@ -1,15 +1,8 @@
 #include "scalar.h"
 
-void scalar_add_fp32(void* out,float* a,float* b,uint32_t numel){
-    float* o = (float*)out;
-    for(uint32_t i = 0; i < numel; i++) {
-        o[i] = a[i] + b[i];
-    }
-}
+DEFINE_BINARY_KERNEL(scalar_add_fp32,float,+)
 
-void scalar_mul_fp32(void* out,float* a,float* b,uint32_t numel){
-    float* o = (float*)out;
-    for(uint32_t i = 0; i < numel; i++) {
-        o[i] = a[i] * b[i];
-    }
-}
+DEFINE_BINARY_KERNEL(scalar_mul_fp32,float,*)
+
+DEFINE_BINARY_KERNEL(scalar_sub_fp32,float,-)
+
