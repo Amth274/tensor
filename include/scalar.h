@@ -27,5 +27,6 @@ void NAME(void* out,const void* a,const void* b, uint32_t numel) \
 void scalar_add_fp32(void* out,const void* a,const void* b,uint32_t numel);
 void scalar_mul_fp32(void* out,const void* a,const void* b,uint32_t numel);
 void scalar_sub_fp32(void* out,const void* a,const void* b,uint32_t numel);
+void scalar_div_fp32(void* out,const void* a,const void* b,uint32_t numel);
 
 #endif

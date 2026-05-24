@@ -107,40 +107,115 @@ int graph_topo_sort(Graph* g)
 }
 
 
-// lifetime analysis
-
 int graph_compute_lifetimes(Graph* g)
 {
-    if (!g || !g->execution_order || g->execution_count == 0)
+    if (!g ||
+        !g->execution_order ||
+        g->execution_count == 0)
+    {
         return -1;
+    }
 
-    uint32_t node_count = g->node_count;
+    uint32_t node_count   = g->node_count;
     uint32_t tensor_count = g->tensor_count;
 
-    // Allocate node_id -> execution index map
-    uint32_t* position = (uint32_t*)malloc(sizeof(uint32_t) * node_count);
+    /*
+    =====================================================
+    node_id -> execution position map
+    =====================================================
+    */
+
+    uint32_t* position =
+        (uint32_t*)malloc(
+            sizeof(uint32_t) * node_count
+        );
+
     if (!position)
         return -1;
 
-    for (uint32_t i = 0; i < g->execution_count; i++) {
-        uint32_t node_id = g->execution_order[i];
+    for (uint32_t i = 0;
+         i < g->execution_count;
+         i++)
+    {
+        uint32_t node_id =
+            g->execution_order[i];
+
         position[node_id] = i;
     }
 
-    // Compute lifetimes for each tensor
-    for (uint32_t t_id = 0; t_id < tensor_count; t_id++) {
+    /*
+    =====================================================
+    Compute tensor lifetimes
+    =====================================================
+    */
 
-        TensorMeta* t = &g->tensors[t_id];
+    for (uint32_t t_id = 0;
+         t_id < tensor_count;
+         t_id++)
+    {
+        TensorMeta* t =
+            &g->tensors[t_id];
 
-        // ---- Case 1: Tensor has consumers ----
+        /*
+        =================================================
+        GRAPH OUTPUTS
+        =================================================
+
+        Outputs must remain alive until the end of graph
+        execution because user may access them after
+        execution finishes.
+
+        Therefore they cannot participate in arena reuse.
+        =================================================
+        */
+
+        if (t->is_output) {
+
+            if (t->producer != INVALID_ID) {
+
+                t->first_use =
+                    position[t->producer];
+            }
+            else {
+
+                /*
+                Input tensor exposed as output
+                */
+
+                t->first_use = 0;
+            }
+
+            /*
+            Keep alive until end of execution
+            */
+
+            t->last_use =
+                g->execution_count - 1;
+
+            continue;
+        }
+
+        /*
+        =================================================
+        CASE 1:
+        Tensor has consumers
+        =================================================
+        */
+
         if (t->num_consumers > 0) {
 
             uint32_t first = UINT32_MAX;
             uint32_t last  = 0;
 
-            for (uint32_t c = 0; c < t->num_consumers; c++) {
-                uint32_t consumer_id = t->consumers[c];
-                uint32_t exec_pos = position[consumer_id];
+            for (uint32_t c = 0;
+                 c < t->num_consumers;
+                 c++)
+            {
+                uint32_t consumer_id =
+                    t->consumers[c];
+
+                uint32_t exec_pos =
+                    position[consumer_id];
 
                 if (exec_pos < first)
                     first = exec_pos;
@@ -149,26 +224,64 @@ int graph_compute_lifetimes(Graph* g)
                     last = exec_pos;
             }
 
-            // Determine first_use
+            /*
+            ---------------------------------------------
+            Produced tensor
+            ---------------------------------------------
+            */
+
             if (t->producer != INVALID_ID) {
-                t->first_use = position[t->producer];
-            } else {
-                // No producer: lifetime starts at first actual use
+
+                t->first_use =
+                    position[t->producer];
+            }
+
+            /*
+            ---------------------------------------------
+            Input tensor
+            ---------------------------------------------
+            */
+
+            else {
+
                 t->first_use = first;
             }
 
             t->last_use = last;
         }
 
-        // ---- Case 2: Tensor has NO consumers ----
+        /*
+        =================================================
+        CASE 2:
+        Tensor has NO consumers
+        =================================================
+        */
+
         else {
 
+            /*
+            ---------------------------------------------
+            Produced but never consumed
+            ---------------------------------------------
+            */
+
             if (t->producer != INVALID_ID) {
-                uint32_t exec_pos = position[t->producer];
-                t->first_use = exec_pos;
-                t->last_use  = exec_pos;
-            } else {
-                // Completely unused tensor
+
+                uint32_t pos =
+                    position[t->producer];
+
+                t->first_use = pos;
+                t->last_use  = pos;
+            }
+
+            /*
+            ---------------------------------------------
+            Standalone input tensor
+            ---------------------------------------------
+            */
+
+            else {
+
                 t->first_use = 0;
                 t->last_use  = 0;
             }
@@ -176,6 +289,7 @@ int graph_compute_lifetimes(Graph* g)
     }
 
     free(position);
+
     return 0;
 }
 

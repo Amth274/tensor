@@ -6,7 +6,7 @@
 
 DispatchKey execution_policy(Node* n,Graph* g){
 
-    OpType od = n->op;
+    OpType op = n->op;
     for(uint32_t i=0;i<n->num_inputs;i++){
         i++;
     }
