@@ -94,7 +94,7 @@ int main()
         g,
         1,
         shape,
-        DTYPE_FP32,
+        DTYPE_FP64,
         0
     );
 
@@ -102,7 +102,7 @@ int main()
         g,
         1,
         shape,
-        DTYPE_FP32,
+        DTYPE_FP64,
         0
     );
 

@@ -19,6 +19,7 @@ typedef enum {
     DTYPE_FP32,
     DTYPE_FP16,
     DTYPE_BF16,
+    DTYPE_FP64,
     DTYPE_COUNT
 } DType;
 

@@ -125,21 +125,14 @@ int graph_compute_lifetimes(Graph* g)
     =====================================================
     */
 
-    uint32_t* position =
-        (uint32_t*)malloc(
-            sizeof(uint32_t) * node_count
-        );
+    uint32_t* position =(uint32_t*)malloc(sizeof(uint32_t) * node_count);
 
     if (!position)
         return -1;
 
-    for (uint32_t i = 0;
-         i < g->execution_count;
-         i++)
+    for (uint32_t i = 0;i < g->execution_count;i++)
     {
-        uint32_t node_id =
-            g->execution_order[i];
-
+        uint32_t node_id = g->execution_order[i];
         position[node_id] = i;
     }
 
