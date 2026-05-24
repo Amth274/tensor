@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include "tensor.h"
+#include "runtime.h"
+
 
 /*
 ========================================
@@ -42,7 +44,8 @@ typedef struct {
     Device device;
     OpType op;
     DType dtype;
-    uint8_t contiguous;
+    isa_t isa;
+    
 } DispatchKey;
 
 /*
