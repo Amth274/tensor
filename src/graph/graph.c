@@ -78,6 +78,7 @@ static size_t dtype_size(DType dtype) // temporary fxn
         case DTYPE_FP32: return 4;
         case DTYPE_FP16: return 2;
         case DTYPE_BF16: return 2;
+        case DTYPE_FP64: return 8;
         default: return 0;
     }
 }

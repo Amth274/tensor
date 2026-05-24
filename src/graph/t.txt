@@ -1,8 +1,0 @@
-int graph_backward(g)
-
-backward_array = g->execution_order.reverse
-
-for tensor->is_output==true:
-dt = fxn_derivative(tensor) 
-
-
