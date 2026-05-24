@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "graph.h"
+#include "policy.h"
 #include <stdio.h>
 
 #define INITIAL_NODE_CAPACITY   16
@@ -26,69 +27,34 @@ int graph_execute(Graph* g)
         return -1;
     }
 
-    for(uint32_t i = 0;
-        i < g->execution_count;
-        i++)
-    {
-        uint32_t node_id =
-            g->execution_order[i];
+    for(uint32_t i = 0;i < g->execution_count;i++){
+        uint32_t node_id = g->execution_order[i];
 
-        Node* node =
-            &g->nodes[node_id];
+        Node* node = &g->nodes[node_id];
 
-        if (node->num_inputs != 2 ||
-            node->num_outputs != 1)
-        {
-            fprintf(stderr,
-                "ERROR: unsupported node\n");
-
+        if (node->num_inputs != 2 || node->num_outputs != 1){
+            fprintf(stderr,"ERROR: unsupported node\n");
             return -1;
         }
 
-        TensorMeta* out_meta =
-            &g->tensors[node->outputs[0]];
+        TensorMeta* out_meta = &g->tensors[node->outputs[0]];
 
-        void* out =
-            get_tensor_data(
-                g,
-                node->outputs[0]
-            );
+        void* out =get_tensor_data(g,node->outputs[0]);
 
-        void* in0 =
-            get_tensor_data(
-                g,
-                node->inputs[0]
-            );
+        void* in0 =get_tensor_data(g,node->inputs[0]);
 
-        void* in1 =
-            get_tensor_data(
-                g,
-                node->inputs[1]
-            );
+        void* in1 =get_tensor_data(g,node->inputs[1]);
 
-        DispatchKey key = {
-            .device = g->device,
-            .op = node->op,
-            .dtype = out_meta->dtype,
-            .contiguous = 1
-        };
+        DispatchKey key = execution_policy(&g->nodes[node_id],g);
 
-        BinaryKernelFn fn =
-            dispatch_binary_kernel(key);
+        BinaryKernelFn fn =dispatch_binary_kernel(key);
 
         if (!fn) {
-            fprintf(stderr,
-                "ERROR: kernel dispatch failed\n");
-
+            fprintf(stderr,"ERROR: kernel dispatch failed\n");
             return -1;
         }
 
-        fn(
-            out,
-            in0,
-            in1,
-            out_meta->numel
-        );
+        fn(out,in0,in1,out_meta->numel);
     }
 
     g->executed = 1;

@@ -83,7 +83,7 @@ int main()
     -----------------------------------------------------
     */
 
-    Tensor* out = tensor_add(a, b);
+    Tensor* out = tensor_mul(a, b);
 
     if (!out) {
         printf("FAILED: tensor_add\n");
