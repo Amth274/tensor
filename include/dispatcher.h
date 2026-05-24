@@ -56,5 +56,6 @@ void dispatcher_init();
 BinaryKernelFn dispatch_binary_kernel(
     DispatchKey key
 );
+void register_binary_kernel(Device device,OpType op,DType dtype,uint8_t contiguous,BinaryKernelFn fn);
 
 #endif

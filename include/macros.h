@@ -12,8 +12,8 @@ Binary kernel generator macro
 void NAME(void* out,const void* a,const void* b, uint32_t numel) \
 {                               \
     TYPE* o = (TYPE*)out ;      \
-    TYPE* x = (const TYPE*)a; \
-    TYPE* y = (const TYPE*)b; \
+    const TYPE* x = (const TYPE*)a; \
+    const TYPE* y = (const TYPE*)b; \
                                     \
     for(uint32_t i=0;i<numel;i++){  \
         o[i] = x[i] OP y[i];        \
@@ -22,4 +22,4 @@ void NAME(void* out,const void* a,const void* b, uint32_t numel) \
 }    
 
 
-#endif MACROS_H
+#endif //MACROS_H

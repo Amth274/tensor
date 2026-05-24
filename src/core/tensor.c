@@ -6,36 +6,6 @@
 #include "memory.h"
 // #include "dispatcher.h"
 
-//helper function 
-static void compute_contiguous_strides(
-    int32_t ndims,
-    const int64_t* shape,
-    int64_t* strides)
-{
-    if (ndims == 0) return;
-
-    strides[ndims - 1] = 1;
-    for (int32_t i = ndims - 2; i >= 0; i--) {
-        strides[i] = strides[i + 1] * shape[i + 1];
-    }
-}
-
-static size_t compute_numel(int32_t ndims, const int64_t* shape) {
-    size_t numel = 1;
-    for (int32_t i = 0; i < ndims; i++) {
-        numel *= shape[i];
-    }
-    return numel;
-}
-
-static size_t dtype_size(DType dtype) {
-    switch (dtype) {
-        case DTYPE_FP32: return 4;
-        case DTYPE_FP16: return 2;
-        case DTYPE_BF16: return 2;
-        default: return 0;
-    }
-}
 
 /*
 ===================================================================================================
