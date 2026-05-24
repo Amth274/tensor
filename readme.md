@@ -234,14 +234,25 @@ This project prioritizes:
 
 # Motivation
 
-This runtime is primarily a systems-learning project exploring the implementation details behind modern tensor runtimes and ML execution engines such as:
+Most modern tensor frameworks heavily prioritize compute throughput while treating memory usage as a secondary concern.
+
+This project explores a different direction: a memory-first tensor runtime focused on reducing peak tensor residency and improving memory efficiency through:
+
+- lifetime-aware arena allocation
+- aggressive temporary tensor reuse
+- graph-level memory planning
+- output pinning semantics
+- dispatch-aware execution policies
+
+The long-term goal is to build a runtime capable of reducing memory usage by approximately 10–15% compared to traditional eager execution frameworks while maintaining modular and extensible execution backends.
+
+The project is also a systems-learning exploration into the implementation details behind modern ML runtimes and compiler systems such as:
 
 - TensorRT
 - XLA
-- tinygrad
 - TVM
+- tinygrad
 - PyTorch internals
-
 ---
 
 # Status
