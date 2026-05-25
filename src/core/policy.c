@@ -14,7 +14,7 @@ DispatchKey execution_policy(Node* n,Graph* g){
     dpk.device = g->device;
     dpk.op = n->op;
     dpk.dtype = DTYPE_FP32;
-    // dpk.contiguous = 1;
+    dpk.contiguous = 1;
     for(uint32_t i=0;i<n->num_inputs;i++){
         TensorMeta* tm = n->inputs[i];
         if(tm->numel > 1024){

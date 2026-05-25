@@ -477,6 +477,7 @@ int graph_validate(Graph* g){
             return -1;
             break;
         }
+        
     }
     for(uint_fast32_t i=0;i<g->tensor_count;i++){
         if(g->tensors[i].id!=i){
