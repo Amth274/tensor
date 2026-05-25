@@ -7,9 +7,10 @@ binary_registry
 [DEVICE_COUNT]
 [OP_COUNT]
 [DTYPE_COUNT]
-[2];
+[2]
+[ISA_MAX];
 
-void register_binary_kernel(Device device,OpType op,DType dtype,uint8_t contiguous,BinaryKernelFn fn,isa_t isa){
+void register_binary_kernel(Device device,OpType op,DType dtype,uint8_t contiguous,isa_t isa,BinaryKernelFn fn){
     binary_registry[device][op][dtype][contiguous][isa]= fn;
 }
 

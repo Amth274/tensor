@@ -1,6 +1,7 @@
 #include "scalar.h"
 #include "macros.h"
 
+
 DEFINE_BINARY_KERNEL(scalar_add_fp32,float,+)
 
 DEFINE_BINARY_KERNEL(scalar_mul_fp32,float,*)

@@ -7,6 +7,7 @@ typedef enum {
     ISA_AVX2,
     ISA_AVX512,
     ISA_NEON,
+    ISA_MAX
 } isa_t;
 
 
