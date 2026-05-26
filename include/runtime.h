@@ -10,5 +10,15 @@ typedef enum {
     ISA_MAX
 } isa_t;
 
+typedef struct {
+    uint8_t avx2;
+    uint8_t avx512;
+    uint8_t fma;
+    uint8_t sse42;
+} CpuCaps;
+
+extern CpuCaps g_cpu_caps;
+
+void detect_cpu_caps(void);
 
 #endif 
