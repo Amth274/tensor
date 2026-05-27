@@ -14,8 +14,13 @@ void register_binary_kernel(Device device,OpType op,DType dtype,uint8_t contiguo
     binary_registry[device][op][dtype][contiguous][isa]= fn;
 }
 
+void register_unary_kernel(Device device,OpType op,DType dtype,uint8_t contiguous,isa_t isa,BinaryKernelFn fn){
+    binary_registry[device][op][dtype][contiguous][isa]= fn;
+}
+
 void dispatcher_init(){
-    register_cpu_kernels();
+    register_cpu_binary_kernels();
+    register_cpu_unary_kernels();
 }
 
 BinaryKernelFn dispatch_binary_kernel(DispatchKey key){

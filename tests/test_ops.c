@@ -94,7 +94,7 @@ int main()
         g,
         1,
         shape,
-        DTYPE_FP64,
+        DTYPE_FP32,
         0
     );
 
@@ -102,7 +102,7 @@ int main()
         g,
         1,
         shape,
-        DTYPE_FP64,
+        DTYPE_FP32,
         0
     );
 
@@ -121,11 +121,13 @@ int main()
     Tensor* mul_out = tensor_mul(a, b);
     Tensor* sub_out = tensor_sub(a, b);
     Tensor* div_out = tensor_div(a, b);
+    Tensor* neg_out = tensor_neg(a);
 
     if (!add_out ||
         !mul_out ||
         !sub_out ||
-        !div_out)
+        !div_out ||
+        !neg_out)
     {
         printf("FAILED: op creation\n");
         return -1;
@@ -133,7 +135,7 @@ int main()
 
     /*
     -----------------------------------------------------
-    Compile graph
+    Mark graph outputs
     -----------------------------------------------------
     */
 
@@ -141,7 +143,14 @@ int main()
     g->tensors[mul_out->id].is_output = 1;
     g->tensors[sub_out->id].is_output = 1;
     g->tensors[div_out->id].is_output = 1;
-    
+    g->tensors[neg_out->id].is_output = 1;
+
+    /*
+    -----------------------------------------------------
+    Compile graph
+    -----------------------------------------------------
+    */
+
     if (graph_compile(g) != 0) {
         printf("FAILED: graph_compile\n");
         return -1;
@@ -170,6 +179,9 @@ int main()
 
     float* div_ptr =
         (float*)get_tensor_ptr(g, div_out->id);
+
+    float* neg_ptr =
+        (float*)get_tensor_ptr(g, neg_out->id);
 
     /*
     -----------------------------------------------------
@@ -208,6 +220,7 @@ int main()
     print_tensor("MUL", mul_ptr, 4);
     print_tensor("SUB", sub_ptr, 4);
     print_tensor("DIV", div_ptr, 4);
+    print_tensor("NEG", neg_ptr, 4);
 
     /*
     -----------------------------------------------------
@@ -254,6 +267,15 @@ int main()
     if (div_ptr[3] != 0.1f) success = 0;
 
     /*
+    NEG
+    */
+
+    if (neg_ptr[0] != -1.0f) success = 0;
+    if (neg_ptr[1] != -2.0f) success = 0;
+    if (neg_ptr[2] != -3.0f) success = 0;
+    if (neg_ptr[3] != -4.0f) success = 0;
+
+    /*
     -----------------------------------------------------
     Final result
     -----------------------------------------------------
@@ -281,6 +303,7 @@ int main()
     free(mul_out);
     free(sub_out);
     free(div_out);
+    free(neg_out);
 
     return 0;
 }

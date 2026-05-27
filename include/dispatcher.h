@@ -17,6 +17,7 @@ typedef enum {
     OP_SUB,
     OP_MUL,
     OP_DIV,
+    OP_NEG,
     OP_COUNT
 } OpType;
 
@@ -59,5 +60,6 @@ void dispatcher_init();
 
 BinaryKernelFn dispatch_binary_kernel(DispatchKey key);
 void register_binary_kernel(Device device,OpType op,DType dtype,uint8_t contiguous,isa_t isa,BinaryKernelFn fn);
+void register_unary_kernel(Device device,OpType op,DType dtype,uint8_t contiguous,isa_t isa,BinaryKernelFn fn);
 
 #endif

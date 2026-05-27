@@ -1,6 +1,9 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
+#include <stdlib.h>
+#include <stdint.h>
+
 typedef enum {
     ISA_SCALAR=0,
     ISA_AVX,

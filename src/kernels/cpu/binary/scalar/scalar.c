@@ -19,3 +19,4 @@ DEFINE_BINARY_KERNEL(scalar_sub_fp64,double,-)
 DEFINE_BINARY_KERNEL(scalar_div_fp64,double,/)
 
 
+DEFINE_UNARY_KERNEL(scalar_neg_fp32,float,-)

@@ -2,7 +2,7 @@
 #include "scalar.h"
 #include "avx2.h"
 
-void register_cpu_kernels(void)
+void register_cpu_binary_kernels(void)
 {
     register_binary_kernel(DEVICE_CPU,OP_ADD,DTYPE_FP32,1,ISA_SCALAR,scalar_add_fp32);
     register_binary_kernel(DEVICE_CPU,OP_MUL,DTYPE_FP32,1,ISA_SCALAR,scalar_mul_fp32);
