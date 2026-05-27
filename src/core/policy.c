@@ -7,9 +7,8 @@
 
 DispatchKey execution_policy(Node* n,Graph* g){
 
-    // OpType op = n->op;
-
     DispatchKey dpk;
+    
     dpk.device = g->device;
     dpk.op = n->op;
     dpk.dtype = DTYPE_FP32;

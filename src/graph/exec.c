@@ -32,10 +32,7 @@ int graph_execute(Graph* g)
 
         Node* node = &g->nodes[node_id];
 
-        if (node->num_inputs != 2 || node->num_outputs != 1){
-            fprintf(stderr,"ERROR: unsupported node\n");
-            return -1;
-        }
+
 
         TensorMeta* out_meta = &g->tensors[node->outputs[0]];
 
@@ -43,18 +40,18 @@ int graph_execute(Graph* g)
 
         void* in0 =get_tensor_data(g,node->inputs[0]);
 
-        void* in1 =get_tensor_data(g,node->inputs[1]);
+        // void* in1 =get_tensor_data(g,node->inputs[1]);
 
         DispatchKey key = execution_policy(&g->nodes[node_id],g);
 
-        BinaryKernelFn fn =dispatch_binary_kernel(key);
+        UnaryKernelFn fn =dispatch_unary_kernel(key);
 
         if (!fn) {
             fprintf(stderr,"ERROR: kernel dispatch failed\n");
             return -1;
         }
 
-        fn(out,in0,in1,out_meta->numel);
+        fn(out,in0,out_meta->numel);
     }
 
     g->executed = 1;
