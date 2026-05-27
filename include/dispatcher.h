@@ -19,7 +19,23 @@ typedef enum {
     OP_DIV,
     OP_NEG,
     OP_COUNT
+} Op;
+
+
+
+/*
+========================================
+OPS TYPE
+========================================
+*/
+
+typedef enum {
+    OP_TYPE_CONTIGUOUS,
+    OP_TYPE_STRIDED,
+    OP_TYPE_BROADCASTED,
+    OP_TYPE_COUNT
 } OpType;
+
 
 /*
 ========================================

@@ -16,22 +16,6 @@ MACROS
 #define INITIAL_TENSOR_CAPACITY 32
 
 
-// typedef int (*KernelFn)(Graph* g, Node* node);
-
-
-// =======================
-// OpType`
-// ===========`============
-
-// typedef enum {
-//     OP_ADD,
-//     OP_SUB,
-//     OP_MUL,`
-//     OP_DIV,
-//     OP_COUNT
-// // } OpType;
-
-
 // // ============================================================================================================
 // TensorMeta
 // ============================================================================================================
@@ -80,7 +64,7 @@ typedef struct {
 typedef struct {
     uint32_t id;
 
-    OpType op;
+    Op op;
 
     uint32_t num_inputs;
     uint32_t inputs[MAX_INPUTS];
@@ -138,7 +122,7 @@ void graph_destroy(Graph* g);
 
 // IR building
 uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType dtype,uint8_t requires_grad);
-uint32_t graph_add_node(Graph* g,OpType op,uint32_t* inputs,uint32_t num_inputs,uint32_t* outputs,uint32_t num_outputs);
+uint32_t graph_add_node(Graph* g,Op op,uint32_t* inputs,uint32_t num_inputs,uint32_t* outputs,uint32_t num_outputs);
 int graph_topo_sort(Graph* g);
 int graph_lifetime_analysis(Graph* g);
 size_t graph_simulate_peak_memory(Graph* g);

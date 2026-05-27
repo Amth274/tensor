@@ -161,7 +161,7 @@ uint32_t graph_add_tensor_meta(Graph* g,int32_t ndims,const int64_t* shape,DType
 }
 
 
-uint32_t graph_add_node(Graph* g,OpType op,uint32_t* inputs,uint32_t num_inputs,uint32_t* outputs,uint32_t num_outputs)
+uint32_t graph_add_node(Graph* g,Op op,uint32_t* inputs,uint32_t num_inputs,uint32_t* outputs,uint32_t num_outputs)
 {
     if (!g || num_inputs > MAX_INPUTS || num_outputs > MAX_OUTPUTS)
         return UINT32_MAX;
