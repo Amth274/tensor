@@ -2,9 +2,9 @@
 #define DISPATCHER_H
 
 #include <stdint.h>
-#include "tensor.h"
-#include "runtime.h"
 #include "dispatch_key.h"
+#include "types.h"
+
 
 extern BinaryKernelFn binary_registry
     [DEVICE_COUNT][OP_COUNT][DTYPE_COUNT][2][ISA_MAX];

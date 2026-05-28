@@ -3,25 +3,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
+#include "types.h"
 // =======================
 // Device & DType
 // =======================
 
-typedef enum {
-    DEVICE_CPU,
-    DEVICE_CUDA,
-    DEVICE_ROCM, 
-    DEVICE_COUNT
-} Device;
 
-typedef enum {
-    DTYPE_FP32,
-    DTYPE_FP16,
-    DTYPE_BF16,
-    DTYPE_FP64,
-    DTYPE_COUNT
-} DType;
 
 
 // Forward declaration
