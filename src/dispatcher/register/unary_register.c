@@ -1,4 +1,4 @@
-#include "dispatcher.h"
+#include "registery.h"
 #include "cpu_ops.h"
 
 void register_cpu_unary_kernels(void){

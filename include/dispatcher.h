@@ -6,22 +6,16 @@
 #include "runtime.h"
 #include "dispatch_key.h"
 
+extern BinaryKernelFn binary_registry
+    [DEVICE_COUNT][OP_COUNT][DTYPE_COUNT][2][ISA_MAX];
 
-
-
-/*
-========================================
-DISPATCH KEY
-========================================
-*/
+extern UnaryKernelFn unary_registry
+    [DEVICE_COUNT][OP_COUNT][DTYPE_COUNT][2][ISA_MAX];
 
 void dispatcher_init();
 
 BinaryKernelFn dispatch_binary_kernel(DispatchKey key);
 UnaryKernelFn dispatch_unary_kernel(DispatchKey key);
 
-void register_binary_kernel(Device device,Op op,DType dtype,uint8_t contiguous,isa_t isa,BinaryKernelFn fn);
-void register_unary_kernel(Device device,Op op,DType dtype,uint8_t contiguous,isa_t isa,UnaryKernelFn fn);
-void register_cpu_unary_kernels(void);
-void register_cpu_binary_kernels(void);
+
 #endif

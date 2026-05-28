@@ -1,8 +1,7 @@
 #ifndef CPU_OPS_H
 #define CPU_OPS_H
 
-// #include "dispatcher.h"
-                               
+#include<stdint.h>
 
 //elementary binary kernels 
 void scalar_add_fp32(void* out,const void* a,const void* b,uint32_t numel);
