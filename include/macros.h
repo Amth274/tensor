@@ -39,15 +39,13 @@ void NAME(void* out,const void* a,uint32_t numel){  \
     }                                               \
 }
 
-#define DEFINE_LOG_KERNEL(NAME,TYPE,BASE)           \
-void NAME(void* out,const void* a,uint32_t numel){  \ 
-                                                    \
-    TYPE* o = (TYPE*)out;                           \
-    const TYPE* x = (const TYPE*)a;                 \
-                                                    \
-    for(uint32_t i=0;i<numel;i++){                  \
-        
-    }
+#define DEFINE_LOG_KERNEL(NAME,TYPE) \
+void NAME(void* out,const void* a,double sc,uint32_t numel){ \
+    TYPE* o = (TYPE*)out; \
+    const TYPE* x = (const TYPE*)a; \
+    for(uint32_t i=0;i<numel;i++){ \
+        o[i] = (TYPE)(log((double)x[i]) / log(sc)); \
+    } \
 }
 
 #endif //MACROS_H

@@ -9,5 +9,6 @@ Tensor* tensor_mul(Tensor* t1, Tensor* t2);
 Tensor* tensor_div(Tensor* t1, Tensor* t2);
 Tensor* tensor_sub(Tensor* t1, Tensor* t2);
 Tensor* tensor_neg(Tensor* t);
+Tensor* tensor_log(Tensor* t,float a);
 
 #endif // OPS_H
