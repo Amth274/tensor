@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "graph.h"
-#include "policy.h"
 #include "dispatch_key_builder.h"
 #include "dispatcher.h"
 #include <stdio.h>

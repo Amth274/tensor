@@ -1,6 +1,5 @@
 #include "dispatcher.h"
-#include "scalar.h"
-#include "avx2.h"
+#include "cpu_ops.h"
 
 void register_cpu_binary_kernels(void)
 {
