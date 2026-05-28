@@ -1,5 +1,6 @@
 #ifndef MACROS_H
 #define MACROS_H
+#include<math.h>
 
 /*
 ==================================================
@@ -38,5 +39,15 @@ void NAME(void* out,const void* a,uint32_t numel){  \
     }                                               \
 }
 
+#define DEFINE_LOG_KERNEL(NAME,TYPE,BASE)           \
+void NAME(void* out,const void* a,uint32_t numel){  \ 
+                                                    \
+    TYPE* o = (TYPE*)out;                           \
+    const TYPE* x = (const TYPE*)a;                 \
+                                                    \
+    for(uint32_t i=0;i<numel;i++){                  \
+        
+    }
+}
 
 #endif //MACROS_H

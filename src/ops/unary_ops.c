@@ -17,13 +17,7 @@ Tensor* tensor_neg(Tensor* t)
     Graph* g = t->graph;
     TensorMeta* m = &g->tensors[t->id];
 
-    Tensor* out = tensor_create(
-        g,
-        m->ndims,
-        m->shape,
-        m->dtype,
-        m->requires_grad
-    );
+    Tensor* out = tensor_create(g,m->ndims,m->shape,m->dtype,m->requires_grad);
 
     if (!out) {
         fprintf(stderr, "ERROR: output tensor alloc failed\n");
@@ -39,4 +33,8 @@ Tensor* tensor_neg(Tensor* t)
     }
 
     return out;
+}
+
+Tensor* tensor_log(Tensor* t,float a){
+    
 }

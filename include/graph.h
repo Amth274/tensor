@@ -65,6 +65,7 @@ typedef struct {
     uint32_t id;
 
     Op op;
+    float scalar; //for scalar ops
 
     uint32_t num_inputs;
     uint32_t inputs[MAX_INPUTS];
