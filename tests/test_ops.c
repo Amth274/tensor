@@ -117,11 +117,12 @@ int main()
     -----------------------------------------------------
     */
 
+    double temp = 2.0;
     Tensor* add_out = tensor_add(a, b);
     Tensor* mul_out = tensor_mul(a, b);
     Tensor* sub_out = tensor_sub(a, b);
     Tensor* div_out = tensor_div(a, b);
-    Tensor* neg_out = tensor_neg(a);
+    Tensor* neg_out = tensor_log(a,temp);
 
     if (!add_out ||
         !mul_out ||

@@ -11,6 +11,7 @@ typedef enum {
     OP_MUL,
     OP_DIV,
     OP_NEG,
+    OP_LOG,
     OP_COUNT
 } Op;
 
