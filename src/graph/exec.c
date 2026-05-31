@@ -18,7 +18,7 @@ OpKind classify_op(Op op){
     if( op==OP_ADD || op==OP_DIV || op==OP_MUL || op==OP_SUB){
         return OP_KIND_BINARY;
     }
-    if(op==OP_NEG){
+    if(op==OP_NEG || op==OP_LOG){
         return OP_KIND_UNARY;
     }
 
@@ -70,7 +70,7 @@ int graph_execute(Graph* g)
         void* out_ptr = get_tensor_data(g,node->outputs[0]);
         void* in_ptr = get_tensor_data(g,node->inputs[0]);
 
-        fn(out_ptr,in_ptr,out->numel);
+        fn(out_ptr,in_ptr,node->scalar,out->numel);
         break;
         }
     
