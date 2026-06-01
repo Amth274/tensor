@@ -45,3 +45,19 @@ DispatchKey get_unary_dispatch_key(Op op,TensorMeta* a,TensorMeta* out,Graph* g)
 
     return dpk;
 }
+
+DispatchKey get_matmul_dispatch_key(TensorMeta* a,TensorMeta* b,TensorMeta* out,Graph* g){
+    DispatchKey dpk;
+    dpk.device = g->device;
+    dpk.op = OP_MATMUL;
+    dpk.dtype = out->dtype;
+    dpk.contiguous = 1;
+
+    if (a->dtype != b->dtype || a->dtype != out->dtype) {
+        dpk.isa = ISA_SCALAR;
+        return dpk;
+    }
+
+    dpk.isa = ISA_SCALAR;
+    return dpk;
+}

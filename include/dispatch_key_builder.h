@@ -19,4 +19,11 @@ DispatchKey get_unary_dispatch_key(
     Graph* g
 );
 
+DispatchKey get_matmul_dispatch_key(
+    TensorMeta* a,
+    TensorMeta* b,
+    TensorMeta* out,
+    Graph* g
+);
+
 #endif

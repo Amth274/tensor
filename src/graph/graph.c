@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "graph.h"
+#include "runtime.h"
 #include <stdio.h>
 
 #define INITIAL_NODE_CAPACITY   16
@@ -65,8 +66,10 @@ void graph_destroy(Graph* g)
     free(g->tensors);
 
     if (g->arena) {
-        // replace with device_free later
-        free(g->arena);
+        if (g->device == DEVICE_CUDA)
+            gpu_managed_free(g->arena);
+        else
+            free(g->arena);
     }
 
     free(g);

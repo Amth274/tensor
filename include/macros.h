@@ -29,8 +29,9 @@ UNARY KERNELS
 */
 
 #define DEFINE_UNARY_KERNEL(NAME,TYPE,OP)           \
-void NAME(void* out,const void* a,uint32_t numel){  \
+void NAME(void* out,const void* a,double sc,uint32_t numel){  \
                                                     \
+    (void)sc;                                       \
     TYPE* o = (TYPE*)out;                           \
     const TYPE* x = (const TYPE*)a;                 \
                                                     \

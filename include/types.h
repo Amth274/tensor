@@ -25,6 +25,7 @@ typedef enum {
     OP_DIV,
     OP_NEG,
     OP_LOG,
+    OP_MATMUL,
     OP_COUNT
 } Op;
 
@@ -40,6 +41,7 @@ typedef enum {
 typedef enum {
     OP_KIND_UNARY,
     OP_KIND_BINARY,
+    OP_KIND_MATMUL,
     OP_KIND_REDUCTION,
     OP_KIND_COUNT
 } OpKind;

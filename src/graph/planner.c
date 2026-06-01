@@ -3,6 +3,7 @@
 #include "graph.h"
 #include <stdio.h>
 #include "dispatcher.h"
+#include "runtime.h"
 
 #define INITIAL_NODE_CAPACITY   16
 #define INITIAL_TENSOR_CAPACITY 32
@@ -502,11 +503,18 @@ int graph_allocate_arena(Graph* g)
         return 0;
 
     if (g->arena) {
-        free(g->arena);
+        if (g->device == DEVICE_CUDA)
+            gpu_managed_free(g->arena);
+        else
+            free(g->arena);
         g->arena = NULL;
     }
 
-    g->arena = malloc(g->arena_size);
+    if (g->device == DEVICE_CUDA)
+        g->arena = gpu_managed_alloc(g->arena_size);
+    else
+        g->arena = malloc(g->arena_size);
+
     if (!g->arena)
         return -1;
 
@@ -536,6 +544,5 @@ int graph_compile(Graph* g)
     g->compiled = 1;
     return 0;
 }
-
 
 

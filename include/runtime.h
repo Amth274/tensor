@@ -23,5 +23,7 @@ typedef struct {
 extern CpuCaps g_cpu_caps;
 
 void detect_cpu_caps(void);
+void* gpu_managed_alloc(size_t size);
+void gpu_managed_free(void* ptr);
 
 #endif 

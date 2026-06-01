@@ -57,7 +57,7 @@ Tensor* tensor_log(Tensor* t,float a)
     uint32_t inputs[1] = { t->id };
     uint32_t outpus[1] = {out->id};
 
-    if (graph_add_node(g,OP_NEG,inputs,1,outpus,1) == INVALID_ID){
+    if (graph_add_node(g,OP_LOG,inputs,1,outpus,1) == INVALID_ID){
         free(out);
         return NULL;
     }
