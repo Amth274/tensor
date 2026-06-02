@@ -1,9 +1,17 @@
+#include <math.h>
 #include "cpu_ops.h"
-#include "macros.h"
 
-DEFINE_LOG_KERNEL(scalar_log_fp32,float)
+int scalar_log_fp32(KernelCall* call)
+{
+    float* out = (float*)call->outputs[0];
+    const float* a = (const float*)call->inputs[0];
+    double base = call->node->scalar;
+    double denom = log(base);
+    uint32_t numel = (uint32_t)call->output_metas[0]->numel;
 
-// void scalar_log_fp32(void* out,const void* a,double sc,uint32_t numel){
+    for (uint32_t i = 0; i < numel; i++) {
+        out[i] = (float)(log((double)a[i]) / denom);
+    }
 
-//     float*
-// }
+    return 0;
+}

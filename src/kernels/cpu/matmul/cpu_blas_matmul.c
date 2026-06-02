@@ -3,11 +3,16 @@
 
 #define MATMUL_BLOCK 32
 
-void cpu_blas_matmul_fp32(void* out,const void* a,const void* b,uint32_t m,uint32_t n,uint32_t k)
+int cpu_blas_matmul_fp32(KernelCall* call)
 {
-    float* c = (float*)out;
-    const float* x = (const float*)a;
-    const float* y = (const float*)b;
+    TensorMeta* a_meta = call->input_metas[0];
+    TensorMeta* b_meta = call->input_metas[1];
+    uint32_t m = (uint32_t)a_meta->shape[0];
+    uint32_t n = (uint32_t)b_meta->shape[1];
+    uint32_t k = (uint32_t)a_meta->shape[1];
+    float* c = (float*)call->outputs[0];
+    const float* x = (const float*)call->inputs[0];
+    const float* y = (const float*)call->inputs[1];
 
     for (uint32_t i = 0; i < m * n; i++) {
         c[i] = 0.0f;
@@ -31,13 +36,19 @@ void cpu_blas_matmul_fp32(void* out,const void* a,const void* b,uint32_t m,uint3
             }
         }
     }
+    return 0;
 }
 
-void cpu_blas_matmul_fp64(void* out,const void* a,const void* b,uint32_t m,uint32_t n,uint32_t k)
+int cpu_blas_matmul_fp64(KernelCall* call)
 {
-    double* c = (double*)out;
-    const double* x = (const double*)a;
-    const double* y = (const double*)b;
+    TensorMeta* a_meta = call->input_metas[0];
+    TensorMeta* b_meta = call->input_metas[1];
+    uint32_t m = (uint32_t)a_meta->shape[0];
+    uint32_t n = (uint32_t)b_meta->shape[1];
+    uint32_t k = (uint32_t)a_meta->shape[1];
+    double* c = (double*)call->outputs[0];
+    const double* x = (const double*)call->inputs[0];
+    const double* y = (const double*)call->inputs[1];
 
     for (uint32_t i = 0; i < m * n; i++) {
         c[i] = 0.0;
@@ -61,4 +72,5 @@ void cpu_blas_matmul_fp64(void* out,const void* a,const void* b,uint32_t m,uint3
             }
         }
     }
+    return 0;
 }

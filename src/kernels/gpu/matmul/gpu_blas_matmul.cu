@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <cuda_runtime.h>
+#include "kernel.h"
 
 extern "C" void* gpu_managed_alloc(size_t size)
 {
@@ -47,18 +48,28 @@ __global__ static void matmul_fp64_kernel(double* c,const double* a,const double
     c[row * n + col] = sum;
 }
 
-extern "C" void gpu_blas_matmul_fp32(void* out,const void* a,const void* b,uint32_t m,uint32_t n,uint32_t k)
+extern "C" int gpu_blas_matmul_fp32(KernelCall* call)
 {
+    TensorMeta* a_meta = call->input_metas[0];
+    TensorMeta* b_meta = call->input_metas[1];
+    uint32_t m = (uint32_t)a_meta->shape[0];
+    uint32_t n = (uint32_t)b_meta->shape[1];
+    uint32_t k = (uint32_t)a_meta->shape[1];
     dim3 block(16, 16);
     dim3 grid((n + block.x - 1) / block.x, (m + block.y - 1) / block.y);
-    matmul_fp32_kernel<<<grid, block>>>((float*)out, (const float*)a, (const float*)b, m, n, k);
-    cudaDeviceSynchronize();
+    matmul_fp32_kernel<<<grid, block>>>((float*)call->outputs[0], (const float*)call->inputs[0], (const float*)call->inputs[1], m, n, k);
+    return cudaDeviceSynchronize() == cudaSuccess ? 0 : -1;
 }
 
-extern "C" void gpu_blas_matmul_fp64(void* out,const void* a,const void* b,uint32_t m,uint32_t n,uint32_t k)
+extern "C" int gpu_blas_matmul_fp64(KernelCall* call)
 {
+    TensorMeta* a_meta = call->input_metas[0];
+    TensorMeta* b_meta = call->input_metas[1];
+    uint32_t m = (uint32_t)a_meta->shape[0];
+    uint32_t n = (uint32_t)b_meta->shape[1];
+    uint32_t k = (uint32_t)a_meta->shape[1];
     dim3 block(16, 16);
     dim3 grid((n + block.x - 1) / block.x, (m + block.y - 1) / block.y);
-    matmul_fp64_kernel<<<grid, block>>>((double*)out, (const double*)a, (const double*)b, m, n, k);
-    cudaDeviceSynchronize();
+    matmul_fp64_kernel<<<grid, block>>>((double*)call->outputs[0], (const double*)call->inputs[0], (const double*)call->inputs[1], m, n, k);
+    return cudaDeviceSynchronize() == cudaSuccess ? 0 : -1;
 }

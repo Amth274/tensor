@@ -13,6 +13,27 @@ void* get_tensor_data(Graph* g,uint32_t tensor_id){
     return (uint8_t*)g->arena + t->offset;
 }
 
+static void build_kernel_call(Graph* g, Node* node, KernelCall* call)
+{
+    memset(call, 0, sizeof(*call));
+    call->graph = g;
+    call->node = node;
+    call->num_inputs = node->num_inputs;
+    call->num_outputs = node->num_outputs;
+
+    for (uint32_t i = 0; i < node->num_inputs; i++) {
+        uint32_t tensor_id = node->inputs[i];
+        call->inputs[i] = get_tensor_data(g, tensor_id);
+        call->input_metas[i] = &g->tensors[tensor_id];
+    }
+
+    for (uint32_t i = 0; i < node->num_outputs; i++) {
+        uint32_t tensor_id = node->outputs[i];
+        call->outputs[i] = get_tensor_data(g, tensor_id);
+        call->output_metas[i] = &g->tensors[tensor_id];
+    }
+}
+
 OpKind classify_op(Op op){
     
     if( op==OP_ADD || op==OP_DIV || op==OP_MUL || op==OP_SUB){
@@ -47,54 +68,42 @@ int graph_execute(Graph* g)
         Node* node = &g->nodes[node_id];
 
         OpKind op_kind = classify_op(node->op);
+        KernelCall call;
+        build_kernel_call(g, node, &call);
+        DispatchKey key;
+
         switch (op_kind)
         {
         case OP_KIND_BINARY:{
-        TensorMeta* m1 = &g->tensors[node->inputs[0]];
-        TensorMeta* m2 = &g->tensors[node->inputs[1]];
-        TensorMeta* out = &g->tensors[node->outputs[0]];
-        DispatchKey key = get_binary_dispatch_key(node->op,m1,m2,out,g);
-        BinaryKernelFn fn = dispatch_binary_kernel(key);
-
-        void* out_ptr = get_tensor_data(g,node->outputs[0]);
-        void* a_ptr = get_tensor_data(g,node->inputs[0]);
-        void* b_ptr = get_tensor_data(g,node->inputs[1]);
-
-        fn(out_ptr,a_ptr,b_ptr,out->numel);
+        key = get_binary_dispatch_key(node->op,call.input_metas[0],call.input_metas[1],call.output_metas[0],g);
             break;
         }
         
         case OP_KIND_UNARY:{
-        TensorMeta* m = &g->tensors[node->inputs[0]];
-        TensorMeta* out = &g->tensors[node->outputs[0]];
-        DispatchKey key = get_unary_dispatch_key(node->op,m,out,g);
-        UnaryKernelFn fn = dispatch_unary_kernel(key);
-
-        void* out_ptr = get_tensor_data(g,node->outputs[0]);
-        void* in_ptr = get_tensor_data(g,node->inputs[0]);
-
-        fn(out_ptr,in_ptr,node->scalar,out->numel);
+        key = get_unary_dispatch_key(node->op,call.input_metas[0],call.output_metas[0],g);
         break;
         }
         
         case OP_KIND_MATMUL:{
-        TensorMeta* m1 = &g->tensors[node->inputs[0]];
-        TensorMeta* m2 = &g->tensors[node->inputs[1]];
-        TensorMeta* out = &g->tensors[node->outputs[0]];
-        DispatchKey key = get_matmul_dispatch_key(m1,m2,out,g);
-        MatMulKernelFn fn = dispatch_matmul_kernel(key);
-
-        void* out_ptr = get_tensor_data(g,node->outputs[0]);
-        void* a_ptr = get_tensor_data(g,node->inputs[0]);
-        void* b_ptr = get_tensor_data(g,node->inputs[1]);
-
-        fn(out_ptr,a_ptr,b_ptr,(uint32_t)m1->shape[0],(uint32_t)m2->shape[1],(uint32_t)m1->shape[1]);
+        key = get_matmul_dispatch_key(call.input_metas[0],call.input_metas[1],call.output_metas[0],g);
         break;
         }
     
         default:
-            break;
+            fprintf(stderr,"ERROR: unsupported op kind\n");
+            return -1;
         }       
+
+        KernelFn fn = dispatch_kernel(key);
+        if (!fn) {
+            fprintf(stderr,"ERROR: kernel dispatch failed\n");
+            return -1;
+        }
+
+        if (fn(&call) != 0) {
+            fprintf(stderr,"ERROR: kernel execution failed\n");
+            return -1;
+        }
         
     }
 
